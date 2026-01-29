@@ -360,12 +360,9 @@ MIT License - feel free to use for your own projects!
 - Web Speech API by browser vendors
 - Gemini AI by Google
 - Design inspiration from modern UI libraries
-- Built with ❤️ for hackathons
-
 ---
 
 **Built by:** Hackathon Team  
-**Time:** 2.5 hours  
-**Status:** ✅ Demo Ready
-
-For questions or issues, check the troubleshooting section above or review the code comments.
+- Sonia Sharma
+- P Saanvi
+- Rohini Vishu
