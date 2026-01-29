@@ -21,7 +21,7 @@ app.use(express.json());
 let genAI = null;
 let model = null;
 
-if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'AIzaSyArrEM7poiqAxQFDZwMw1UCPt5blWhBaCs') {
+if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== '') {
   try {
     genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     model = genAI.getGenerativeModel({ model: 'gemini-pro' });
