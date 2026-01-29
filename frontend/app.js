@@ -20,6 +20,9 @@ const state = {
     borderStyle: 'none',
     shadow: 'none',
     padding: 'normal',
+    fontSize: 'normal',
+    animationSpeed: 'normal',
+    borderRadius: 'normal',
     components: []
   },
   commandHistory: [],
@@ -403,6 +406,42 @@ function trySimpleCommand(command) {
     return 'UI reset';
   }
   
+  // Font size modifications
+  if ((lower.includes('larger') || lower.includes('bigger')) && lower.includes('text')) {
+    state.uiState.fontSize = 'large';
+    applyUIState();
+    return 'Increased font size';
+  }
+  if ((lower.includes('smaller') || lower.includes('reduce')) && lower.includes('text')) {
+    state.uiState.fontSize = 'small';
+    applyUIState();
+    return 'Reduced font size';
+  }
+  
+  // Animation speed
+  if (lower.includes('fast') && lower.includes('animation')) {
+    state.uiState.animationSpeed = 'fast';
+    applyUIState();
+    return 'Sped up animations';
+  }
+  if (lower.includes('slow') && lower.includes('animation')) {
+    state.uiState.animationSpeed = 'slow';
+    applyUIState();
+    return 'Slowed down animations';
+  }
+  
+  // Rounded corners
+  if (lower.includes('round') && lower.includes('corners')) {
+    state.uiState.borderRadius = 'large';
+    applyUIState();
+    return 'Made corners more rounded';
+  }
+  if (lower.includes('sharp') && lower.includes('corners')) {
+    state.uiState.borderRadius = 'none';
+    applyUIState();
+    return 'Made corners sharp';
+  }
+  
   return null; // Not a simple command
 }
 
@@ -475,6 +514,15 @@ function applyUIState() {
   // Apply padding
   elements.uiContainer.setAttribute('data-padding', state.uiState.padding);
   
+  // Apply font size
+  elements.uiContainer.setAttribute('data-font-size', state.uiState.fontSize);
+  
+  // Apply animation speed
+  elements.uiContainer.setAttribute('data-animation-speed', state.uiState.animationSpeed);
+  
+  // Apply border radius
+  elements.uiContainer.setAttribute('data-border-radius', state.uiState.borderRadius);
+  
   // Render components
   renderComponents(state.uiState.components);
 }
@@ -539,6 +587,26 @@ function createComponent(schema) {
       return createDivider(schema);
     case 'link':
       return createLink(schema);
+    case 'progress':
+      return createProgress(schema);
+    case 'checkbox':
+      return createCheckbox(schema);
+    case 'radio':
+      return createRadio(schema);
+    case 'textarea':
+      return createTextarea(schema);
+    case 'select':
+      return createSelect(schema);
+    case 'navbar':
+      return createNavbar(schema);
+    case 'footer':
+      return createFooter(schema);
+    case 'sidebar':
+      return createSidebar(schema);
+    case 'modal':
+      return createModal(schema);
+    case 'tooltip':
+      return createTooltip(schema);
     default:
       console.warn('Unknown component type:', schema.type);
       return null;
@@ -805,6 +873,307 @@ function getAlertIcon(type) {
     case 'danger': return '✕';
     default: return 'ℹ';
   }
+}
+
+/**
+ * Create progress bar component
+ */
+function createProgress(schema) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'component-progress-wrapper';
+  
+  if (schema.label) {
+    const label = document.createElement('div');
+    label.className = 'progress-label';
+    label.textContent = `${schema.label}: ${schema.value}%`;
+    wrapper.appendChild(label);
+  }
+  
+  const progress = document.createElement('div');
+  progress.className = 'component-progress';
+  progress.setAttribute('data-color', schema.color || 'primary');
+  
+  const bar = document.createElement('div');
+  bar.className = 'progress-bar';
+  bar.style.width = `${schema.value || 0}%`;
+  
+  progress.appendChild(bar);
+  wrapper.appendChild(progress);
+  
+  return wrapper;
+}
+
+/**
+ * Create checkbox component
+ */
+function createCheckbox(schema) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'component-checkbox-wrapper';
+  
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.className = 'component-checkbox';
+  checkbox.checked = schema.checked || false;
+  
+  const label = document.createElement('label');
+  label.className = 'checkbox-label';
+  label.textContent = schema.label || 'Checkbox';
+  
+  wrapper.appendChild(checkbox);
+  wrapper.appendChild(label);
+  
+  return wrapper;
+}
+
+/**
+ * Create radio button group component
+ */
+function createRadio(schema) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'component-radio-wrapper';
+  
+  const label = document.createElement('div');
+  label.className = 'radio-group-label';
+  label.textContent = schema.label || 'Radio Group';
+  wrapper.appendChild(label);
+  
+  if (schema.options && Array.isArray(schema.options)) {
+    schema.options.forEach((option, index) => {
+      const radioWrapper = document.createElement('div');
+      radioWrapper.className = 'radio-option';
+      
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = schema.name || 'radio-group';
+      radio.className = 'component-radio';
+      radio.id = `radio-${schema.name}-${index}`;
+      
+      const radioLabel = document.createElement('label');
+      radioLabel.htmlFor = radio.id;
+      radioLabel.textContent = option;
+      
+      radioWrapper.appendChild(radio);
+      radioWrapper.appendChild(radioLabel);
+      wrapper.appendChild(radioWrapper);
+    });
+  }
+  
+  return wrapper;
+}
+
+/**
+ * Create textarea component
+ */
+function createTextarea(schema) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'component-textarea-wrapper';
+  
+  const label = document.createElement('label');
+  label.className = 'component-label';
+  label.textContent = schema.label || 'Textarea';
+  
+  const textarea = document.createElement('textarea');
+  textarea.className = 'component-textarea';
+  textarea.rows = schema.rows || 4;
+  textarea.placeholder = schema.label || '';
+  
+  wrapper.appendChild(label);
+  wrapper.appendChild(textarea);
+  
+  return wrapper;
+}
+
+/**
+ * Create select dropdown component
+ */
+function createSelect(schema) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'component-select-wrapper';
+  
+  const label = document.createElement('label');
+  label.className = 'component-label';
+  label.textContent = schema.label || 'Select';
+  
+  const select = document.createElement('select');
+  select.className = 'component-select';
+  
+  if (schema.options && Array.isArray(schema.options)) {
+    schema.options.forEach(option => {
+      const optionEl = document.createElement('option');
+      optionEl.value = option;
+      optionEl.textContent = option;
+      select.appendChild(optionEl);
+    });
+  }
+  
+  wrapper.appendChild(label);
+  wrapper.appendChild(select);
+  
+  return wrapper;
+}
+
+/**
+ * Create navbar component
+ */
+function createNavbar(schema) {
+  const navbar = document.createElement('nav');
+  navbar.className = 'component-navbar';
+  
+  const brand = document.createElement('div');
+  brand.className = 'navbar-brand';
+  brand.textContent = schema.brand || 'Brand';
+  navbar.appendChild(brand);
+  
+  const links = document.createElement('div');
+  links.className = 'navbar-links';
+  
+  if (schema.links && Array.isArray(schema.links)) {
+    schema.links.forEach(link => {
+      const a = document.createElement('a');
+      a.className = 'navbar-link';
+      a.href = link.href || '#';
+      a.textContent = link.text || 'Link';
+      links.appendChild(a);
+    });
+  }
+  
+  navbar.appendChild(links);
+  
+  return navbar;
+}
+
+/**
+ * Create footer component
+ */
+function createFooter(schema) {
+  const footer = document.createElement('footer');
+  footer.className = 'component-footer';
+  
+  const content = document.createElement('div');
+  content.className = 'footer-content';
+  content.textContent = schema.content || '© 2026';
+  footer.appendChild(content);
+  
+  if (schema.links && Array.isArray(schema.links)) {
+    const links = document.createElement('div');
+    links.className = 'footer-links';
+    
+    schema.links.forEach(link => {
+      const a = document.createElement('a');
+      a.className = 'footer-link';
+      a.href = link.href || '#';
+      a.textContent = link.text || 'Link';
+      links.appendChild(a);
+    });
+    
+    footer.appendChild(links);
+  }
+  
+  return footer;
+}
+
+/**
+ * Create sidebar component
+ */
+function createSidebar(schema) {
+  const sidebar = document.createElement('aside');
+  sidebar.className = 'component-sidebar';
+  
+  if (schema.title) {
+    const title = document.createElement('div');
+    title.className = 'sidebar-title';
+    title.textContent = schema.title;
+    sidebar.appendChild(title);
+  }
+  
+  if (schema.items && Array.isArray(schema.items)) {
+    const list = document.createElement('ul');
+    list.className = 'sidebar-list';
+    
+    schema.items.forEach(item => {
+      const li = document.createElement('li');
+      li.className = 'sidebar-item';
+      li.textContent = item;
+      list.appendChild(li);
+    });
+    
+    sidebar.appendChild(list);
+  }
+  
+  return sidebar;
+}
+
+/**
+ * Create modal component (trigger button + modal)
+ */
+function createModal(schema) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'component-modal-wrapper';
+  
+  const button = document.createElement('button');
+  button.className = 'component-button';
+  button.setAttribute('data-color', 'primary');
+  button.textContent = schema.showButton || 'Show Modal';
+  
+  const modal = document.createElement('div');
+  modal.className = 'component-modal hidden';
+  
+  const modalContent = document.createElement('div');
+  modalContent.className = 'modal-content';
+  
+  const modalHeader = document.createElement('div');
+  modalHeader.className = 'modal-header';
+  
+  const modalTitle = document.createElement('h3');
+  modalTitle.textContent = schema.title || 'Modal Title';
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'modal-close';
+  closeBtn.textContent = '×';
+  
+  modalHeader.appendChild(modalTitle);
+  modalHeader.appendChild(closeBtn);
+  
+  const modalBody = document.createElement('div');
+  modalBody.className = 'modal-body';
+  modalBody.textContent = schema.content || 'Modal content';
+  
+  modalContent.appendChild(modalHeader);
+  modalContent.appendChild(modalBody);
+  modal.appendChild(modalContent);
+  
+  // Event listeners
+  button.addEventListener('click', () => modal.classList.remove('hidden'));
+  closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.classList.add('hidden');
+  });
+  
+  wrapper.appendChild(button);
+  wrapper.appendChild(modal);
+  
+  return wrapper;
+}
+
+/**
+ * Create tooltip component
+ */
+function createTooltip(schema) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'component-tooltip-wrapper';
+  
+  const text = document.createElement('span');
+  text.className = 'tooltip-text';
+  text.textContent = schema.text || 'Hover me';
+  
+  const tooltip = document.createElement('span');
+  tooltip.className = 'tooltip-content';
+  tooltip.textContent = schema.tooltipText || 'Tooltip info';
+  
+  wrapper.appendChild(text);
+  wrapper.appendChild(tooltip);
+  
+  return wrapper;
 }
 
 /**

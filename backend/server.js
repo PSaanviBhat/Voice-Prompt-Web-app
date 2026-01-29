@@ -21,7 +21,7 @@ app.use(express.json());
 let genAI = null;
 let model = null;
 
-if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== '') {
+if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim().length > 0) {
   try {
     genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     model = genAI.getGenerativeModel({ model: 'gemini-pro' });
@@ -84,20 +84,30 @@ COMMAND: "${command}"
 
 RULES:
 1. Return ONLY valid JSON, no explanatory text
-2. Use only these component types: container, input, button, text, table, card, list, image, badge, alert, heading, divider, link
+2. Use only these component types: container, input, button, text, table, card, list, image, badge, alert, heading, divider, link, progress, checkbox, radio, textarea, select, navbar, footer, sidebar, modal, tooltip
 3. Container has: type, layout (column/row/grid), gap (sm/md/lg), children array
 4. Input has: type, label, inputType (text/email/password/number/date)
-5. Button has: type, text, color (primary/secondary/danger/success)
-6. Text has: type, content, size (sm/md/lg/xl)
-7. Table has: type, headers (array), rows (array of arrays)
-8. Card has: type, title, content, footer (optional), color (default/primary/secondary)
+5. Button has: type, text, color (primary/secondary/danger/success), size (sm/md/lg)
+6. Text has: type, content, size (sm/md/lg/xl), color (default/primary/secondary/muted)
+7. Table has: type, headers (array), rows (array of arrays), striped (boolean)
+8. Card has: type, title, content, footer (optional), color (default/primary/secondary/success)
 9. List has: type, items (array), ordered (boolean)
 10. Image has: type, src (url or placeholder), alt, size (sm/md/lg/full)
-11. Badge has: type, text, color (primary/secondary/success/danger/warning)
+11. Badge has: type, text, color (primary/secondary/success/danger/warning/info)
 12. Alert has: type, message, alertType (info/success/warning/danger)
 13. Heading has: type, text, level (1-6)
 14. Divider has: type, style (solid/dashed/dotted)
 15. Link has: type, text, href, external (boolean)
+16. Progress has: type, value (0-100), label (optional), color (primary/secondary/success/danger)
+17. Checkbox has: type, label, checked (boolean)
+18. Radio has: type, label, name (group name), options (array)
+19. Textarea has: type, label, rows (number)
+20. Select has: type, label, options (array)
+21. Navbar has: type, brand, links (array of {text, href})
+22. Footer has: type, content, links (array of {text, href})
+23. Sidebar has: type, title, items (array)
+24. Modal has: type, title, content, showButton (text)
+25. Tooltip has: type, text, tooltipText
 
 EXAMPLES:
 
@@ -332,6 +342,120 @@ function getMockAIResponse(command) {
     };
   }
   
+  // Progress bar
+  if (lowerCommand.includes('progress') || lowerCommand.includes('loading')) {
+    return {
+      components: [
+        {
+          type: "heading",
+          text: "Project Progress",
+          level: 3
+        },
+        {
+          type: "progress",
+          value: 75,
+          label: "Completion",
+          color: "primary"
+        },
+        {
+          type: "progress",
+          value: 60,
+          label: "Testing",
+          color: "success"
+        }
+      ]
+    };
+  }
+  
+  // Form with multiple input types
+  if (lowerCommand.includes('form') || lowerCommand.includes('survey')) {
+    return {
+      components: [
+        {
+          type: "heading",
+          text: "Survey Form",
+          level: 2
+        },
+        {
+          type: "container",
+          layout: "column",
+          gap: "md",
+          children: [
+            { type: "input", label: "Full Name", inputType: "text" },
+            { type: "input", label: "Email", inputType: "email" },
+            { type: "textarea", label: "Comments", rows: 4 },
+            { type: "select", label: "Country", options: ["USA", "UK", "Canada", "Australia"] },
+            { type: "checkbox", label: "Subscribe to newsletter", checked: false },
+            { type: "button", text: "Submit", color: "primary" }
+          ]
+        }
+      ]
+    };
+  }
+  
+  // Navbar
+  if (lowerCommand.includes('navbar') || lowerCommand.includes('navigation') || lowerCommand.includes('menu')) {
+    return {
+      components: [
+        {
+          type: "navbar",
+          brand: "MyApp",
+          links: [
+            { text: "Home", href: "#home" },
+            { text: "Features", href: "#features" },
+            { text: "About", href: "#about" },
+            { text: "Contact", href: "#contact" }
+          ]
+        }
+      ]
+    };
+  }
+  
+  // Footer
+  if (lowerCommand.includes('footer')) {
+    return {
+      components: [
+        {
+          type: "footer",
+          content: "© 2026 Voice Architect UI. All rights reserved.",
+          links: [
+            { text: "Privacy", href: "#privacy" },
+            { text: "Terms", href: "#terms" },
+            { text: "Support", href: "#support" }
+          ]
+        }
+      ]
+    };
+  }
+  
+  // Settings page
+  if (lowerCommand.includes('settings') || lowerCommand.includes('preferences')) {
+    return {
+      components: [
+        {
+          type: "heading",
+          text: "Settings",
+          level: 1
+        },
+        {
+          type: "container",
+          layout: "column",
+          gap: "lg",
+          children: [
+            { type: "heading", text: "Profile Settings", level: 3 },
+            { type: "input", label: "Display Name", inputType: "text" },
+            { type: "input", label: "Email", inputType: "email" },
+            { type: "divider", style: "solid" },
+            { type: "heading", text: "Preferences", level: 3 },
+            { type: "checkbox", label: "Enable notifications", checked: true },
+            { type: "checkbox", label: "Dark mode", checked: false },
+            { type: "button", text: "Save Changes", color: "primary" }
+          ]
+        }
+      ]
+    };
+  }
+  
   // Generic card
   return {
     components: [
@@ -353,11 +477,11 @@ function getMockAIResponse(command) {
  * Validate and sanitize AI output
  */
 function validateUISchema(schema) {
-  const validTypes = ['container', 'input', 'button', 'text', 'table', 'card', 'list', 'image', 'badge', 'alert', 'heading', 'divider', 'link'];
+  const validTypes = ['container', 'input', 'button', 'text', 'table', 'card', 'list', 'image', 'badge', 'alert', 'heading', 'divider', 'link', 'progress', 'checkbox', 'radio', 'textarea', 'select', 'navbar', 'footer', 'sidebar', 'modal', 'tooltip'];
   const validLayouts = ['column', 'row', 'grid'];
   const validGaps = ['sm', 'md', 'lg'];
   const validInputTypes = ['text', 'email', 'password', 'number', 'date'];
-  const validColors = ['primary', 'secondary', 'danger', 'success', 'warning', 'default'];
+  const validColors = ['primary', 'secondary', 'danger', 'success', 'warning', 'default', 'info', 'muted'];
   const validSizes = ['sm', 'md', 'lg', 'xl', 'full'];
   const validAlertTypes = ['info', 'success', 'warning', 'danger'];
   const validDividerStyles = ['solid', 'dashed', 'dotted'];
@@ -433,6 +557,56 @@ function validateUISchema(schema) {
       case 'link':
         if (!component.text || typeof component.text !== 'string') return false;
         if (!component.href || typeof component.href !== 'string') return false;
+        return true;
+      
+      case 'progress':
+        if (typeof component.value !== 'number' || component.value < 0 || component.value > 100) return false;
+        if (component.color && !validColors.includes(component.color)) return false;
+        return true;
+      
+      case 'checkbox':
+        if (!component.label || typeof component.label !== 'string') return false;
+        if (typeof component.checked !== 'boolean') return false;
+        return true;
+      
+      case 'radio':
+        if (!component.label || typeof component.label !== 'string') return false;
+        if (!Array.isArray(component.options)) return false;
+        return true;
+      
+      case 'textarea':
+        if (!component.label || typeof component.label !== 'string') return false;
+        if (component.rows && typeof component.rows !== 'number') return false;
+        return true;
+      
+      case 'select':
+        if (!component.label || typeof component.label !== 'string') return false;
+        if (!Array.isArray(component.options)) return false;
+        return true;
+      
+      case 'navbar':
+        if (!component.brand || typeof component.brand !== 'string') return false;
+        if (!Array.isArray(component.links)) return false;
+        return true;
+      
+      case 'footer':
+        if (!component.content || typeof component.content !== 'string') return false;
+        if (component.links && !Array.isArray(component.links)) return false;
+        return true;
+      
+      case 'sidebar':
+        if (component.title && typeof component.title !== 'string') return false;
+        if (!Array.isArray(component.items)) return false;
+        return true;
+      
+      case 'modal':
+        if (!component.title || typeof component.title !== 'string') return false;
+        if (!component.content || typeof component.content !== 'string') return false;
+        return true;
+      
+      case 'tooltip':
+        if (!component.text || typeof component.text !== 'string') return false;
+        if (!component.tooltipText || typeof component.tooltipText !== 'string') return false;
         return true;
       
       default:
