@@ -1,0 +1,39 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/interpret-command",
+      "dest": "/api/interpret-command.js"
+    },
+    {
+      "src": "/api/ui-state",
+      "dest": "/api/ui-state.js"
+    },
+    {
+      "src": "/api/save-ui",
+      "dest": "/api/save-ui.js"
+    },
+    {
+      "src": "/api/reset-ui",
+      "dest": "/api/reset-ui.js"
+    },
+    {
+      "src": "/health",
+      "dest": "/api/health.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
+    }
+  ]
+}

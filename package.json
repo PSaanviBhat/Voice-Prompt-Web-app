@@ -1,0 +1,13 @@
+{
+  "name": "voice-architect-ui",
+  "version": "1.0.0",
+  "description": "Voice-controlled UI builder with AI",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "vercel-build": "cd backend && npm install"
+  },
+  "keywords": ["voice", "ui-builder", "ai", "gemini"],
+  "author": "",
+  "license": "MIT"
+}
